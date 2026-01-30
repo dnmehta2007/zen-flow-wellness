@@ -2,95 +2,104 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Zen Flow - Wellness App Design System
+   Soft pastel floral theme with calming colors
+   All colors in HSL format */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core backgrounds */
+    --background: 30 30% 98%;
+    --foreground: 340 20% 25%;
 
+    /* Card surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 340 20% 25%;
 
+    /* Popover */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 340 20% 25%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Soft Rose */
+    --primary: 350 60% 70%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Sage Green */
+    --secondary: 140 25% 75%;
+    --secondary-foreground: 140 30% 25%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted - Soft Lavender */
+    --muted: 280 20% 92%;
+    --muted-foreground: 280 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Warm Peach */
+    --accent: 25 80% 80%;
+    --accent-foreground: 25 60% 25%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive */
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Borders and inputs */
+    --border: 340 20% 88%;
+    --input: 340 20% 88%;
+    --ring: 350 60% 70%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
 
+    /* Custom wellness tokens */
+    --zen-rose: 350 60% 70%;
+    --zen-rose-light: 350 50% 92%;
+    --zen-sage: 140 25% 75%;
+    --zen-sage-light: 140 20% 92%;
+    --zen-lavender: 280 30% 82%;
+    --zen-lavender-light: 280 25% 94%;
+    --zen-peach: 25 80% 80%;
+    --zen-cream: 40 40% 96%;
+    --zen-warm: 30 30% 98%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(350 60% 70%), hsl(25 80% 80%));
+    --gradient-secondary: linear-gradient(135deg, hsl(140 25% 75%), hsl(180 30% 80%));
+    --gradient-calm: linear-gradient(180deg, hsl(350 50% 92%), hsl(40 40% 96%));
+    --gradient-sunset: linear-gradient(135deg, hsl(350 60% 85%), hsl(280 30% 85%), hsl(200 40% 85%));
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(350 40% 70% / 0.2);
+    --shadow-card: 0 8px 30px -8px hsl(350 40% 70% / 0.15);
+    --shadow-glow: 0 0 40px -10px hsl(350 60% 70% / 0.3);
+
+    /* Sidebar (keeping for compatibility) */
     --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-foreground: 340 20% 25%;
+    --sidebar-primary: 350 60% 70%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 140 25% 75%;
+    --sidebar-accent-foreground: 140 30% 25%;
+    --sidebar-border: 340 20% 88%;
+    --sidebar-ring: 350 60% 70%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 340 20% 8%;
+    --foreground: 40 30% 95%;
+    --card: 340 15% 12%;
+    --card-foreground: 40 30% 95%;
+    --popover: 340 15% 12%;
+    --popover-foreground: 40 30% 95%;
+    --primary: 350 50% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 140 20% 30%;
+    --secondary-foreground: 140 30% 90%;
+    --muted: 340 15% 18%;
+    --muted-foreground: 340 10% 60%;
+    --accent: 25 60% 50%;
+    --accent-foreground: 25 90% 95%;
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 340 15% 20%;
+    --input: 340 15% 20%;
+    --ring: 350 50% 65%;
   }
 }
 
@@ -100,6 +109,158 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Glass effect cards */
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-md border border-border/50 shadow-lg;
+  }
+
+  /* Zen container with floral background */
+  .zen-bg {
+    background-image: var(--gradient-calm);
+  }
+
+  /* Breathing animation */
+  .animate-breathe {
+    animation: breathe 4s ease-in-out infinite;
+  }
+
+  @keyframes breathe {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 1;
+    }
+  }
+
+  /* Gentle float animation */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Pulse glow animation */
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px -5px hsl(var(--zen-rose) / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 30px -5px hsl(var(--zen-rose) / 0.5);
+    }
+  }
+
+  /* Fade in animation */
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Slide up animation */
+  .animate-slide-up {
+    animation: slide-up 0.6s ease-out forwards;
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Timer circle animation */
+  .timer-circle {
+    stroke-dasharray: 283;
+    stroke-dashoffset: 0;
+    transform: rotate(-90deg);
+    transform-origin: center;
+  }
+
+  /* Streak fire animation */
+  .animate-fire {
+    animation: fire-flicker 0.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes fire-flicker {
+    from {
+      transform: scale(1) rotate(-2deg);
+    }
+    to {
+      transform: scale(1.1) rotate(2deg);
+    }
+  }
+}
+
+@layer utilities {
+  /* Custom gradients as utilities */
+  .bg-gradient-zen {
+    background: var(--gradient-primary);
+  }
+
+  .bg-gradient-calm {
+    background: var(--gradient-calm);
+  }
+
+  .bg-gradient-sunset {
+    background: var(--gradient-sunset);
+  }
+
+  /* Text gradients */
+  .text-gradient-zen {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Custom shadows */
+  .shadow-zen {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-zen-lg {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-zen-glow {
+    box-shadow: var(--shadow-glow);
   }
 }
