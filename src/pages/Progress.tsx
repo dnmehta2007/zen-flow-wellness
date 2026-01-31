@@ -1,3 +1,4 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,6 +7,7 @@ import {
 } from 'lucide-react';
 import { getProgress } from '@/lib/store';
 import { cn } from '@/lib/utils';
+import SessionCharts from '@/components/ui/session-charts';
 
 const Progress = () => {
   const navigate = useNavigate();
@@ -136,6 +138,18 @@ const Progress = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Charts */}
+        <div>
+          {/* Session charts: time and count (weekly/monthly) */}
+          {
+            // Lazy-load the chart component
+          }
+          <React.Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Loading charts…</div>}>
+            {/* @ts-ignore */}
+            <SessionCharts />
+          </React.Suspense>
+        </div>
 
         {/* Recent sessions */}
         <Card className="glass-card">

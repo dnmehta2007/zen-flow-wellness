@@ -14,7 +14,11 @@ const Home = () => {
   const navigate = useNavigate();
   const profile = getUserProfile();
   const progress = getProgress();
-  const [quote, setQuote] = useState(motivationalQuotes[0]);
+  const getDailyIndex = () => Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+  const [quote, setQuote] = useState(() => {
+    const idx = getDailyIndex() % motivationalQuotes.length;
+    return motivationalQuotes[idx];
+  });
   const [showMeditationPrompt, setShowMeditationPrompt] = useState(profile.meditationPromptEnabled);
 
   useEffect(() => {
@@ -22,9 +26,9 @@ const Home = () => {
       navigate('/');
       return;
     }
-    // Random quote
-    const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
-    setQuote(randomQuote);
+    // Quote rotates daily based on days since epoch
+    const idx = getDailyIndex() % motivationalQuotes.length;
+    setQuote(motivationalQuotes[idx]);
   }, [navigate]);
 
   // Generate week calendar
