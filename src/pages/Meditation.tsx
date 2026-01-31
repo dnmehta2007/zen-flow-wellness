@@ -131,6 +131,13 @@ const Meditation = () => {
 
       {isStarted ? (
         <>
+          {/* Background */}
+          <div className="absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-zen-lavender/30 via-zen-peach/20 to-zen-rose-light/30 opacity-60" />
+            <div className="absolute w-96 h-96 rounded-full bg-zen-lavender/10 blur-3xl top-1/4 left-1/4 animate-pulse" />
+            <div className="absolute w-96 h-96 rounded-full bg-zen-rose-light/10 blur-3xl bottom-1/4 right-1/4 animate-pulse" style={{ animationDelay: '2s' }} />
+          </div>
+
           {/* Progress bar */}
           <div className="px-4 mb-8">
             <div className="h-2 bg-muted rounded-full overflow-hidden">

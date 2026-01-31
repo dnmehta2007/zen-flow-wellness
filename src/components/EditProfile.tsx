@@ -2,7 +2,31 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getUserProfile, saveUserProfile } from '@/lib/store';
+
+const genderOptions = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
+
+const dietOptions = [
+  'Omnivore',
+  'Vegetarian',
+  'Vegan',
+  'Pescatarian',
+  'Gluten-free',
+  'Keto',
+  'Paleo',
+];
+
+const goals = [
+  'Overall Fitness',
+  'Flexibility',
+  'Weight Loss',
+  'Stress Relief',
+  'Energy Boost',
+  'Sleep / Wind-down',
+];
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -31,24 +55,70 @@ const EditProfile = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <label className="block mb-1">Name</label>
-          <input className="input" value={name} onChange={e => setName(e.target.value)} />
+          <Label htmlFor="name" className="block mb-1">Name</Label>
+          <Input 
+            id="name"
+            placeholder="Enter your name"
+            value={name} 
+            onChange={e => setName(e.target.value)} 
+          />
         </div>
         <div>
-          <label className="block mb-1">Age</label>
-          <input className="input" type="number" value={age} onChange={e => setAge(e.target.value)} />
+          <Label htmlFor="age" className="block mb-1">Age</Label>
+          <Input 
+            id="age"
+            type="number" 
+            placeholder="Enter your age"
+            value={age} 
+            onChange={e => setAge(e.target.value)} 
+            min={1}
+            max={120}
+          />
         </div>
         <div>
-          <label className="block mb-1">Gender</label>
-          <input className="input" value={gender} onChange={e => setGender(e.target.value)} />
+          <Label htmlFor="gender" className="block mb-1">Gender</Label>
+          <Select value={gender} onValueChange={setGender}>
+            <SelectTrigger id="gender">
+              <SelectValue placeholder="Select gender" />
+            </SelectTrigger>
+            <SelectContent>
+              {genderOptions.map((g) => (
+                <SelectItem key={g} value={g}>
+                  {g}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div>
-          <label className="block mb-1">Primary Goal</label>
-          <input className="input" value={primaryGoal} onChange={e => setPrimaryGoal(e.target.value)} />
+          <Label htmlFor="goal" className="block mb-1">Primary Goal</Label>
+          <Select value={primaryGoal} onValueChange={setPrimaryGoal}>
+            <SelectTrigger id="goal">
+              <SelectValue placeholder="Select primary goal" />
+            </SelectTrigger>
+            <SelectContent>
+              {goals.map((g) => (
+                <SelectItem key={g} value={g}>
+                  {g}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div>
-          <label className="block mb-1">Diet</label>
-          <input className="input" value={diet} onChange={e => setDiet(e.target.value)} />
+          <Label htmlFor="diet" className="block mb-1">Diet</Label>
+          <Select value={diet} onValueChange={setDiet}>
+            <SelectTrigger id="diet">
+              <SelectValue placeholder="Select diet preference" />
+            </SelectTrigger>
+            <SelectContent>
+              {dietOptions.map((d) => (
+                <SelectItem key={d} value={d}>
+                  {d}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <Button onClick={handleSave} className="w-full">Save</Button>
       </CardContent>

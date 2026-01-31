@@ -68,7 +68,17 @@ const Routines = () => {
             {poses.map((pose) => (
               <Card key={pose.id} className="glass-card h-full flex flex-col">
                 <CardContent className="p-4 flex flex-col flex-1">
-                  <img src={pose.image} alt={pose.name} className="w-full h-40 object-cover rounded mb-3" />
+                  {pose.image.endsWith('.mp4') || pose.image.endsWith('.webm') ? (
+                    <video 
+                      src={pose.image} 
+                      autoPlay 
+                      loop 
+                      muted
+                      className="w-full h-40 object-cover rounded mb-3 bg-black"
+                    />
+                  ) : (
+                    <img src={pose.image} alt={pose.name} className="w-full h-40 object-cover rounded mb-3" />
+                  )}
                   <div className="flex-1">
                     <h3 className="font-display font-bold text-lg mb-1">{pose.name}</h3>
                     <p className="text-xs italic text-muted-foreground mb-2">{pose.sanskritName}</p>

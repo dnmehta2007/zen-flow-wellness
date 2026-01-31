@@ -16,6 +16,7 @@ import Meditation from "./pages/Meditation";
 import Routines from "./pages/Routines";
 import Progress from "./pages/Progress";
 import Diet from "./pages/Diet";
+import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/routines" element={<Routines />} />
           <Route path="/progress" element={<Progress />} />
           <Route path="/diet" element={<Diet />} />
+          <Route path="/account" element={<Account />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

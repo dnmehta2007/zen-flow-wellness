@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Flame, Play, BookOpen, Brain, TrendingUp, Utensils, 
-  ChevronRight, Calendar, Clock, Sparkles
+  ChevronRight, Calendar, Clock, Sparkles, User
 } from 'lucide-react';
 import { getUserProfile, getProgress, isSetupComplete } from '@/lib/store';
 import { motivationalQuotes } from '@/lib/diet';
@@ -210,6 +210,15 @@ const Home = () => {
           >
             <Utensils className="w-6 h-6 text-primary" />
             <span className="font-medium">Diet Plan</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => navigate('/account')}
+            className="h-24 flex-col gap-2 bg-card/80 hover:bg-zen-rose/20 border-zen-rose/30"
+          >
+            <User className="w-6 h-6 text-foreground" />
+            <span className="font-medium">Account</span>
           </Button>
         </div>
       </div>

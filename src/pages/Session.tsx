@@ -4,13 +4,24 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   ArrowLeft, Play, Pause, SkipForward, SkipBack, X, 
-  Volume2, VolumeX, Camera, Box
+  Volume2, VolumeX, Camera, Box, Cloud, Waves, Music, Bell
 } from 'lucide-react';
-import { poses, Pose } from '@/lib/poses';
+import { poses, Pose, get3DModelPath } from '@/lib/poses';
 import { getUserProfile } from '@/lib/store';
 import { cn } from '@/lib/utils';
+
+const soundscapes = [
+  { id: 'rain', label: 'Rain', icon: Cloud, file: '/audio/calming-rain.mp3' },
+  { id: 'piano', label: 'Piano', icon: Music, file: '/audio/calming-piano.mp3' },
+  { id: 'peaceful', label: 'Peaceful', icon: Waves, file: '/audio/peaceful.mp3' },
+  { id: 'bells', label: 'Bells', icon: Bell, file: '/audio/calming-bells.mp3' },
+  { id: 'zen', label: 'Zen', icon: Cloud, file: '/audio/zen.mp3' },
+  { id: 'relaxing-beat', label: 'Relaxing Beat', icon: Music, file: '/audio/relaxing beat.mp3' },
+  { id: 'crickets', label: 'Nature Sounds', icon: Waves, file: '/audio/crickets and insects.wav' },
+];
 
 interface SessionConfig {
   poses: string[];
@@ -31,6 +42,7 @@ const Session = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isBreak, setIsBreak] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(profile.soundscapesEnabled);
+  const [selectedSound, setSelectedSound] = useState(soundscapes[2]); // Peaceful by default
   const [showCamera, setShowCamera] = useState(false);
   const [show3D, setShow3D] = useState(false);
 
@@ -55,7 +67,7 @@ const Session = () => {
   // Audio setup
   useEffect(() => {
     if (soundEnabled) {
-      audioRef.current = new Audio('/audio/peaceful.mp3');
+      audioRef.current = new Audio(selectedSound.file);
       audioRef.current.loop = true;
       audioRef.current.volume = 0.3;
       audioRef.current.play().catch(() => {});
@@ -215,18 +227,41 @@ const Session = () => {
             {/* Pose image */}
             <Card className="glass-card overflow-hidden mb-4 flex-shrink-0">
               <div className="aspect-video relative">
-                <img 
-                  src={currentPose.image} 
-                  alt={currentPose.name}
-                  className="w-full h-full object-cover"
-                />
-                {show3D && (
-                  <div className="absolute inset-0 bg-foreground/80 flex items-center justify-center">
-                    <div className="text-center text-primary-foreground">
-                      <Box className="w-12 h-12 mx-auto mb-2 animate-spin" style={{ animationDuration: '3s' }} />
-                      <p className="text-lg font-medium">3D Model Coming Soon</p>
-                    </div>
-                  </div>
+                {show3D && get3DModelPath(currentPose.id) ? (
+                  <video 
+                    src={get3DModelPath(currentPose.id)!} 
+                    autoPlay 
+                    loop 
+                    muted
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <>
+                    {currentPose.image.endsWith('.mp4') || currentPose.image.endsWith('.webm') ? (
+                      <video 
+                        src={currentPose.image} 
+                        autoPlay 
+                        loop 
+                        muted
+                        className="w-full h-full object-cover bg-black"
+                      />
+                    ) : (
+                      <img 
+                        src={currentPose.image} 
+                        alt={currentPose.name}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                    {show3D && !get3DModelPath(currentPose.id) && (
+                      <div className="absolute inset-0 bg-foreground/80 flex items-center justify-center">
+                        <div className="text-center text-primary-foreground">
+                          <Box className="w-12 h-12 mx-auto mb-2" />
+                          <p className="text-lg font-medium">More 3D Models Coming Soon!</p>
+                          <p className="text-sm opacity-70 mt-1">Currently available: Downward Dog, Reverse Warrior</p>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
                 {showCamera && (
                   <div className="absolute inset-0 bg-foreground/90 flex items-center justify-center">
@@ -313,10 +348,52 @@ const Session = () => {
           </div>
 
           {/* Toggle options */}
-          <div className="flex items-center justify-center gap-6">
-            <Button variant="ghost" size="sm" onClick={toggleSound}>
-              {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-            </Button>
+          <div className="flex items-center justify-center gap-4 flex-wrap">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="flex items-center gap-1">
+                  {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="sound-toggle">Sound</Label>
+                    <Switch
+                      id="sound-toggle"
+                      checked={soundEnabled}
+                      onCheckedChange={setSoundEnabled}
+                    />
+                  </div>
+                  {soundEnabled && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Soundscape</p>
+                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                        {soundscapes.map((sound) => {
+                          const Icon = sound.icon;
+                          const isSelected = selectedSound.id === sound.id;
+                          return (
+                            <button
+                              key={sound.id}
+                              onClick={() => setSelectedSound(sound)}
+                              className={cn(
+                                'flex flex-col items-center justify-center p-2 rounded-lg border transition-all duration-200',
+                                isSelected
+                                  ? 'bg-primary/20 border-primary'
+                                  : 'bg-background/50 border-border hover:border-primary/50'
+                              )}
+                            >
+                              <Icon className="w-5 h-5 mb-1" />
+                              <span className="text-xs text-center">{sound.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
             
             <div className="flex items-center gap-2">
               <Switch
