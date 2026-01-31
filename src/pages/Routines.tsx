@@ -57,10 +57,38 @@ const Routines = () => {
       </div>
 
       <Tabs defaultValue="predefined" className="px-4">
-        <TabsList className="grid w-full grid-cols-2 mb-4">
+        <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value="predefined">Curated</TabsTrigger>
           <TabsTrigger value="custom">My Routines</TabsTrigger>
+          <TabsTrigger value="poses">All Poses</TabsTrigger>
         </TabsList>
+        {/* All Poses Tab */}
+        <TabsContent value="poses" className="space-y-4 pb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {poses.map((pose) => (
+              <Card key={pose.id} className="glass-card h-full flex flex-col">
+                <CardContent className="p-4 flex flex-col flex-1">
+                  <img src={pose.image} alt={pose.name} className="w-full h-40 object-cover rounded mb-3" />
+                  <div className="flex-1">
+                    <h3 className="font-display font-bold text-lg mb-1">{pose.name}</h3>
+                    <p className="text-xs italic text-muted-foreground mb-2">{pose.sanskritName}</p>
+                    <p className="text-sm mb-2 line-clamp-3">{pose.description}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    <span className={cn('px-2 py-0.5 rounded-full text-xs', getDifficultyColor(pose.difficulty))}>
+                      {pose.difficulty}
+                    </span>
+                    {pose.goals.map((goal) => (
+                      <span key={goal} className="px-2 py-0.5 rounded-full text-xs bg-muted text-muted-foreground border border-border">
+                        {goal}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
         <TabsContent value="predefined" className="space-y-4 pb-8">
           {predefinedRoutines.map((routine) => (
