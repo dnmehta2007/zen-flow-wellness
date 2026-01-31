@@ -13,8 +13,6 @@ import { poses, Pose, get3DModelPath } from '@/lib/poses';
 import { getUserProfile } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import CameraFeedback from '@/components/CameraFeedback';
-import VoiceCoach from '@/components/VoiceCoach';
-import AutoRotateModel from '@/components/AutoRotateModel';
 import { PostureFeedback } from '@/lib/posture';
 
 const soundscapes = [
@@ -46,16 +44,11 @@ const Session = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isBreak, setIsBreak] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(profile.soundscapesEnabled);
-<<<<<<< HEAD
   const [selectedSound, setSelectedSound] = useState(soundscapes[2]); // Peaceful by default
   const [showCamera, setShowCamera] = useState(false);
-=======
-  const [showCamera, setShowCamera] = useState(profile.cameraFeedbackEnabled ?? false);
   const [cameraEnabled] = useState(profile.cameraFeedbackEnabled ?? false);
->>>>>>> refs/remotes/origin/main
   const [show3D, setShow3D] = useState(false);
   const [postureFeedback, setPostureFeedback] = useState<PostureFeedback | null>(null);
-  const [cueKey, setCueKey] = useState(0);
 
   // Load session config
   useEffect(() => {
@@ -247,7 +240,6 @@ const Session = () => {
             {/* Pose image */}
             <Card className="glass-card overflow-hidden mb-4 flex-shrink-0">
               <div className="aspect-video relative">
-<<<<<<< HEAD
                 {show3D && get3DModelPath(currentPose.id) ? (
                   <video 
                     src={get3DModelPath(currentPose.id)!} 
@@ -284,37 +276,8 @@ const Session = () => {
                     )}
                   </>
                 )}
-                {showCamera && (
-                  <div className="absolute inset-0 bg-foreground/90 flex items-center justify-center">
-                    <div className="text-center text-primary-foreground">
-                      <Camera className="w-12 h-12 mx-auto mb-2" />
-                      <p className="text-lg font-medium">Camera Feature Coming Soon</p>
-                      <p className="text-sm opacity-70">Corrective measures will be available</p>
-                    </div>
-=======
-                <img 
-                  src={currentPose.image} 
-                  alt={currentPose.name}
-                  className="w-full h-full object-cover"
-                />
-                {show3D && (
-                  <div className="absolute inset-0 bg-foreground/80 flex items-center justify-center">
-                    <AutoRotateModel active={show3D} cueKey={cueKey} />
->>>>>>> refs/remotes/origin/main
-                  </div>
-                )}
               </div>
             </Card>
-
-            {/* Voice coach: provides audible corrections when camera detects issues */}
-            <VoiceCoach
-              feedback={postureFeedback}
-              enabled={cameraEnabled && showCamera && (profile.voiceCoachEnabled ?? false)}
-              onSpeak={() => setCueKey((k) => k + 1)}
-              cooldownMs={profile.voiceCooldown ?? 3000}
-              volume={profile.voiceVolume ?? 0.9}
-              lang={profile.voiceLang ?? 'en-US'}
-            />
 
             {/* Timer */}
             <div className="text-center mb-4">
@@ -455,7 +418,26 @@ const Session = () => {
                 <Label htmlFor="camera-toggle" className="text-xs">Camera</Label>
               </div>
             )}
+
+            <Button 
+              variant="ghost" 
+              size="sm"
+              disabled
+              title="Coming soon!"
+              className="text-xs opacity-50"
+            >
+              🎙️ Voice
+            </Button>
           </div>
+
+          {/* Voice Coach Coming Soon - Hidden overlay */}
+          {false && (
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-semibold">🎙️ Voice Coach:</span> Real-time audio guidance coming soon!
+              </p>
+            </div>
+          )}
 
           {/* End session button */}
           <Button
