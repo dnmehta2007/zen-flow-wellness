@@ -11,6 +11,8 @@ import {
 import { poses, Pose } from '@/lib/poses';
 import { getUserProfile } from '@/lib/store';
 import { cn } from '@/lib/utils';
+import CameraFeedback from '@/components/CameraFeedback';
+import { PostureFeedback } from '@/lib/posture';
 
 interface SessionConfig {
   poses: string[];
@@ -31,8 +33,10 @@ const Session = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isBreak, setIsBreak] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(profile.soundscapesEnabled);
-  const [showCamera, setShowCamera] = useState(false);
+  const [showCamera, setShowCamera] = useState(profile.cameraFeedbackEnabled ?? false);
+  const [cameraEnabled] = useState(profile.cameraFeedbackEnabled ?? false);
   const [show3D, setShow3D] = useState(false);
+  const [postureFeedback, setPostureFeedback] = useState<PostureFeedback | null>(null);
 
   // Load session config
   useEffect(() => {
@@ -212,6 +216,15 @@ const Session = () => {
           </div>
         ) : (
           <>
+            {/* Camera Feedback - Shows above pose image if enabled */}
+            {cameraEnabled && showCamera && (
+              <CameraFeedback 
+                isActive={!isBreak && showCamera}
+                poseName={currentPose.name}
+                onFeedback={setPostureFeedback}
+              />
+            )}
+
             {/* Pose image */}
             <Card className="glass-card overflow-hidden mb-4 flex-shrink-0">
               <div className="aspect-video relative">
@@ -225,15 +238,6 @@ const Session = () => {
                     <div className="text-center text-primary-foreground">
                       <Box className="w-12 h-12 mx-auto mb-2 animate-spin" style={{ animationDuration: '3s' }} />
                       <p className="text-lg font-medium">3D Model Coming Soon</p>
-                    </div>
-                  </div>
-                )}
-                {showCamera && (
-                  <div className="absolute inset-0 bg-foreground/90 flex items-center justify-center">
-                    <div className="text-center text-primary-foreground">
-                      <Camera className="w-12 h-12 mx-auto mb-2" />
-                      <p className="text-lg font-medium">Camera Feature Coming Soon</p>
-                      <p className="text-sm opacity-70">Corrective measures will be available</p>
                     </div>
                   </div>
                 )}
@@ -327,14 +331,16 @@ const Session = () => {
               <Label htmlFor="3d-toggle" className="text-xs">3D</Label>
             </div>
             
-            <div className="flex items-center gap-2">
-              <Switch
-                id="camera-toggle"
-                checked={showCamera}
-                onCheckedChange={setShowCamera}
-              />
-              <Label htmlFor="camera-toggle" className="text-xs">Camera</Label>
-            </div>
+            {cameraEnabled && (
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="camera-toggle"
+                  checked={showCamera}
+                  onCheckedChange={setShowCamera}
+                />
+                <Label htmlFor="camera-toggle" className="text-xs">Camera</Label>
+              </div>
+            )}
           </div>
 
           {/* End session button */}

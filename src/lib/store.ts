@@ -10,6 +10,7 @@ export interface UserProfile {
   preferredDuration: number;
   soundscapesEnabled: boolean;
   meditationPromptEnabled: boolean;
+  cameraFeedbackEnabled: boolean;
   setupComplete: boolean;
 }
 
@@ -50,6 +51,7 @@ export const defaultUserProfile: UserProfile = {
   preferredDuration: 10,
   soundscapesEnabled: true,
   meditationPromptEnabled: true,
+  cameraFeedbackEnabled: false,
   setupComplete: false,
 };
 

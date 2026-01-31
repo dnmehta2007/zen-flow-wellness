@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Settings, Clock, Volume2, Brain, Sparkles } from 'lucide-react';
+import { ArrowLeft, Settings, Clock, Volume2, Brain, Sparkles, Webcam } from 'lucide-react';
 import { saveUserProfile, getUserProfile } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
@@ -22,12 +22,14 @@ const SetupPreferences = () => {
   const [duration, setDuration] = useState(existingProfile.preferredDuration || 10);
   const [soundscapes, setSoundscapes] = useState(existingProfile.soundscapesEnabled ?? true);
   const [meditationPrompt, setMeditationPrompt] = useState(existingProfile.meditationPromptEnabled ?? true);
+  const [cameraFeedback, setCameraFeedback] = useState(existingProfile.cameraFeedbackEnabled ?? false);
 
   const handleComplete = () => {
     saveUserProfile({ 
       preferredDuration: duration,
       soundscapesEnabled: soundscapes,
       meditationPromptEnabled: meditationPrompt,
+      cameraFeedbackEnabled: cameraFeedback,
       setupComplete: true,
     });
     navigate('/home');
@@ -105,6 +107,22 @@ const SetupPreferences = () => {
               id="meditation-prompt"
               checked={meditationPrompt}
               onCheckedChange={setMeditationPrompt}
+            />
+          </div>
+          
+          {/* Camera feedback toggle */}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-background/50 border border-border">
+            <div className="flex items-center gap-3">
+              <Webcam className="w-5 h-5 text-zen-sage" />
+              <div>
+                <Label htmlFor="camera-feedback" className="font-medium">Posture Feedback</Label>
+                <p className="text-sm text-muted-foreground">Real-time camera alignment detection</p>
+              </div>
+            </div>
+            <Switch
+              id="camera-feedback"
+              checked={cameraFeedback}
+              onCheckedChange={setCameraFeedback}
             />
           </div>
           
