@@ -10,6 +10,12 @@ export interface UserProfile {
   preferredDuration: number;
   soundscapesEnabled: boolean;
   meditationPromptEnabled: boolean;
+  cameraFeedbackEnabled: boolean;
+  // Voice coach settings for audible posture corrections
+  voiceCoachEnabled: boolean;
+  voiceVolume: number; // 0..1
+  voiceLang: string; // e.g. 'en-US'
+  voiceCooldown: number; // milliseconds between spoken cues
   setupComplete: boolean;
 }
 
@@ -50,6 +56,11 @@ export const defaultUserProfile: UserProfile = {
   preferredDuration: 10,
   soundscapesEnabled: true,
   meditationPromptEnabled: true,
+  cameraFeedbackEnabled: false,
+  voiceCoachEnabled: false,
+  voiceVolume: 0.9,
+  voiceLang: 'en-US',
+  voiceCooldown: 3000,
   setupComplete: false,
 };
 

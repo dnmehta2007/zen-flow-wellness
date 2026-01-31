@@ -12,6 +12,10 @@ import {
 import { poses, Pose, get3DModelPath } from '@/lib/poses';
 import { getUserProfile } from '@/lib/store';
 import { cn } from '@/lib/utils';
+import CameraFeedback from '@/components/CameraFeedback';
+import VoiceCoach from '@/components/VoiceCoach';
+import AutoRotateModel from '@/components/AutoRotateModel';
+import { PostureFeedback } from '@/lib/posture';
 
 const soundscapes = [
   { id: 'rain', label: 'Rain', icon: Cloud, file: '/audio/calming-rain.mp3' },
@@ -42,9 +46,16 @@ const Session = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isBreak, setIsBreak] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(profile.soundscapesEnabled);
+<<<<<<< HEAD
   const [selectedSound, setSelectedSound] = useState(soundscapes[2]); // Peaceful by default
   const [showCamera, setShowCamera] = useState(false);
+=======
+  const [showCamera, setShowCamera] = useState(profile.cameraFeedbackEnabled ?? false);
+  const [cameraEnabled] = useState(profile.cameraFeedbackEnabled ?? false);
+>>>>>>> refs/remotes/origin/main
   const [show3D, setShow3D] = useState(false);
+  const [postureFeedback, setPostureFeedback] = useState<PostureFeedback | null>(null);
+  const [cueKey, setCueKey] = useState(0);
 
   // Load session config
   useEffect(() => {
@@ -224,9 +235,19 @@ const Session = () => {
           </div>
         ) : (
           <>
+            {/* Camera Feedback - Shows above pose image if enabled */}
+            {cameraEnabled && showCamera && (
+              <CameraFeedback 
+                isActive={!isBreak && showCamera}
+                poseName={currentPose.name}
+                onFeedback={setPostureFeedback}
+              />
+            )}
+
             {/* Pose image */}
             <Card className="glass-card overflow-hidden mb-4 flex-shrink-0">
               <div className="aspect-video relative">
+<<<<<<< HEAD
                 {show3D && get3DModelPath(currentPose.id) ? (
                   <video 
                     src={get3DModelPath(currentPose.id)!} 
@@ -270,10 +291,30 @@ const Session = () => {
                       <p className="text-lg font-medium">Camera Feature Coming Soon</p>
                       <p className="text-sm opacity-70">Corrective measures will be available</p>
                     </div>
+=======
+                <img 
+                  src={currentPose.image} 
+                  alt={currentPose.name}
+                  className="w-full h-full object-cover"
+                />
+                {show3D && (
+                  <div className="absolute inset-0 bg-foreground/80 flex items-center justify-center">
+                    <AutoRotateModel active={show3D} cueKey={cueKey} />
+>>>>>>> refs/remotes/origin/main
                   </div>
                 )}
               </div>
             </Card>
+
+            {/* Voice coach: provides audible corrections when camera detects issues */}
+            <VoiceCoach
+              feedback={postureFeedback}
+              enabled={cameraEnabled && showCamera && (profile.voiceCoachEnabled ?? false)}
+              onSpeak={() => setCueKey((k) => k + 1)}
+              cooldownMs={profile.voiceCooldown ?? 3000}
+              volume={profile.voiceVolume ?? 0.9}
+              lang={profile.voiceLang ?? 'en-US'}
+            />
 
             {/* Timer */}
             <div className="text-center mb-4">
@@ -404,14 +445,16 @@ const Session = () => {
               <Label htmlFor="3d-toggle" className="text-xs">3D</Label>
             </div>
             
-            <div className="flex items-center gap-2">
-              <Switch
-                id="camera-toggle"
-                checked={showCamera}
-                onCheckedChange={setShowCamera}
-              />
-              <Label htmlFor="camera-toggle" className="text-xs">Camera</Label>
-            </div>
+            {cameraEnabled && (
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="camera-toggle"
+                  checked={showCamera}
+                  onCheckedChange={setShowCamera}
+                />
+                <Label htmlFor="camera-toggle" className="text-xs">Camera</Label>
+              </div>
+            )}
           </div>
 
           {/* End session button */}
