@@ -16,35 +16,83 @@ const CameraFeedback = ({ isActive, poseName, onFeedback }: CameraFeedbackProps)
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const analysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const initAttemptedRef = useRef(false);
 
   const [feedback, setFeedback] = useState<PostureFeedback | null>(null);
   const [cameraPermission, setCameraPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Request camera access
+  // Request camera access - only run once per activation
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive || initAttemptedRef.current) {
+      console.log('Skipping camera init. isActive:', isActive, 'initAttempted:', initAttemptedRef.current);
+      return;
+    }
+
+    initAttemptedRef.current = true;
 
     const initCamera = async () => {
       try {
         setError(null);
+        console.log('Requesting camera access...');
+        
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { 
             facingMode: 'user',
-            width: { ideal: 640 },
-            height: { ideal: 480 }
+            width: { min: 640, ideal: 1280, max: 1920 },
+            height: { min: 480, ideal: 720, max: 1080 },
+            frameRate: { ideal: 30, max: 60 },
+            aspectRatio: { ideal: 16 / 9 }
           },
           audio: false,
         });
 
+        console.log('Camera stream received:', stream);
+
         if (videoRef.current) {
+          // Explicitly set video element properties
           videoRef.current.srcObject = stream;
+          videoRef.current.muted = true;
+          
+          // Add event listeners for debugging
+          videoRef.current.onloadedmetadata = () => {
+            console.log('Video metadata loaded:', videoRef.current?.videoWidth, videoRef.current?.videoHeight);
+            // Update canvas dimensions to match video
+            if (canvasRef.current) {
+              canvasRef.current.width = videoRef.current?.videoWidth || 640;
+              canvasRef.current.height = videoRef.current?.videoHeight || 480;
+            }
+          };
+
+          videoRef.current.onplay = () => {
+            console.log('Video is now playing');
+            setCameraPermission('granted');
+            setIsAnalyzing(true);
+          };
+
+          videoRef.current.onerror = (e) => {
+            console.error('Video error:', e);
+            setError('Error playing video stream');
+          };
+
           streamRef.current = stream;
-          setCameraPermission('granted');
-          setIsAnalyzing(true);
+          
+          // Attempt to play
+          const playPromise = videoRef.current.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                console.log('Video playback started');
+              })
+              .catch((err) => {
+                console.error('Play error:', err);
+                setError(`Playback error: ${err.message}`);
+              });
+          }
         }
       } catch (err) {
+        console.error('Camera init error:', err);
         setCameraPermission('denied');
         if (err instanceof DOMException) {
           if (err.name === 'NotAllowedError') {
@@ -52,23 +100,43 @@ const CameraFeedback = ({ isActive, poseName, onFeedback }: CameraFeedbackProps)
           } else if (err.name === 'NotFoundError') {
             setError('No camera found on this device.');
           } else {
-            setError('Unable to access camera.');
+            setError(`Camera error: ${err.message}`);
           }
+        } else {
+          setError('Unable to access camera.');
         }
         setIsAnalyzing(false);
       }
     };
 
-    if (isActive && cameraPermission === 'pending') {
-      initCamera();
-    }
+    initCamera();
+  }, [isActive]);
 
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [isActive, cameraPermission]);
+  // Stop camera when isActive becomes false
+  useEffect(() => {
+    if (isActive) return;
+
+    console.log('Deactivating camera');
+    initAttemptedRef.current = false;
+    
+    if (streamRef.current) {
+      console.log('Stopping camera stream...');
+      streamRef.current.getTracks().forEach(track => {
+        console.log('Stopping track:', track.kind);
+        track.stop();
+      });
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    if (analysisIntervalRef.current) {
+      clearInterval(analysisIntervalRef.current);
+      analysisIntervalRef.current = null;
+    }
+    setIsAnalyzing(false);
+    setCameraPermission('pending');
+  }, [isActive]);
 
   // Analyze posture periodically
   useEffect(() => {
@@ -78,9 +146,10 @@ const CameraFeedback = ({ isActive, poseName, onFeedback }: CameraFeedbackProps)
       const video = videoRef.current;
       const canvas = canvasRef.current;
 
-      if (!video || !canvas || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+      // readyState: 0=HAVE_NOTHING, 1=HAVE_METADATA, 2=HAVE_CURRENT_DATA, 3=HAVE_FUTURE_DATA, 4=HAVE_ENOUGH_DATA
+      if (!video || !canvas || video.readyState < 4) return;
 
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
 
       // Mirror the video horizontally for selfie view
@@ -88,6 +157,10 @@ const CameraFeedback = ({ isActive, poseName, onFeedback }: CameraFeedbackProps)
       ctx.scale(-1, 1);
       ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
       ctx.restore();
+      
+      // Ensure crisp rendering
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
 
       // Analyze posture
       const postureFeedback = analyzePosture(canvas, poseName);
@@ -209,8 +282,16 @@ const CameraFeedback = ({ isActive, poseName, onFeedback }: CameraFeedbackProps)
             autoPlay
             playsInline
             muted
-            className="w-full h-full object-cover mirror"
-            style={{ transform: 'scaleX(-1)' }}
+            controls={false}
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'cover',
+              transform: 'scaleX(-1)',
+              display: 'block',
+              imageRendering: 'auto',
+              WebkitTransform: 'scaleX(-1)'
+            }}
           />
           <canvas
             ref={canvasRef}
