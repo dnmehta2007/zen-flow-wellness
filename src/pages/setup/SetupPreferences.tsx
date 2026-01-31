@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Settings, Clock, Volume2, Brain, Sparkles, Webcam } from 'lucide-react';
+import { ArrowLeft, Settings, Clock, Volume2, Brain, Sparkles, Webcam, Mic } from 'lucide-react';
 import { saveUserProfile, getUserProfile } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +23,10 @@ const SetupPreferences = () => {
   const [soundscapes, setSoundscapes] = useState(existingProfile.soundscapesEnabled ?? true);
   const [meditationPrompt, setMeditationPrompt] = useState(existingProfile.meditationPromptEnabled ?? true);
   const [cameraFeedback, setCameraFeedback] = useState(existingProfile.cameraFeedbackEnabled ?? false);
+  const [voiceCoachEnabled, setVoiceCoachEnabled] = useState(existingProfile.voiceCoachEnabled ?? false);
+  const [voiceVolume, setVoiceVolume] = useState<number>((existingProfile.voiceVolume ?? 0.9) * 100);
+  const [voiceLang, setVoiceLang] = useState(existingProfile.voiceLang ?? 'en-US');
+  const [voiceCooldown, setVoiceCooldown] = useState<number>((existingProfile.voiceCooldown ?? 3000) / 1000);
 
   const handleComplete = () => {
     saveUserProfile({ 
@@ -30,6 +34,10 @@ const SetupPreferences = () => {
       soundscapesEnabled: soundscapes,
       meditationPromptEnabled: meditationPrompt,
       cameraFeedbackEnabled: cameraFeedback,
+      voiceCoachEnabled: voiceCoachEnabled,
+      voiceVolume: Math.max(0, Math.min(1, voiceVolume / 100)),
+      voiceLang: voiceLang,
+      voiceCooldown: Math.max(0, Math.round(voiceCooldown * 1000)),
       setupComplete: true,
     });
     navigate('/home');
@@ -125,6 +133,67 @@ const SetupPreferences = () => {
               onCheckedChange={setCameraFeedback}
             />
           </div>
+
+          {/* Voice coach toggle */}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-background/50 border border-border">
+            <div className="flex items-center gap-3">
+              <Mic className="w-5 h-5 text-zen-lavender" />
+              <div>
+                <Label htmlFor="voice-coach" className="font-medium">Audible Coach</Label>
+                <p className="text-sm text-muted-foreground">AI voice cues for posture corrections during sessions</p>
+              </div>
+            </div>
+            <Switch
+              id="voice-coach"
+              checked={voiceCoachEnabled}
+              onCheckedChange={setVoiceCoachEnabled}
+            />
+          </div>
+
+          {/* Voice settings */}
+          {voiceCoachEnabled && (
+            <div className="space-y-3">
+              <div className="p-4 rounded-xl bg-background/50 border border-border">
+                <Label className="font-medium">Volume</Label>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={voiceVolume}
+                  onChange={(e) => setVoiceVolume(Number(e.target.value))}
+                  className="w-full mt-2"
+                />
+                <div className="text-xs text-muted-foreground mt-1">{voiceVolume}%</div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-background/50 border border-border">
+                <Label className="font-medium">Language</Label>
+                <select
+                  value={voiceLang}
+                  onChange={(e) => setVoiceLang(e.target.value)}
+                  className="w-full mt-2 p-2 rounded"
+                >
+                  <option value="en-US">English (US)</option>
+                  <option value="en-GB">English (UK)</option>
+                  <option value="es-ES">Español (ES)</option>
+                </select>
+              </div>
+
+              <div className="p-4 rounded-xl bg-background/50 border border-border">
+                <Label className="font-medium">Cue Cooldown</Label>
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="number"
+                    min={0}
+                    value={voiceCooldown}
+                    onChange={(e) => setVoiceCooldown(Number(e.target.value))}
+                    className="w-24 p-2 rounded"
+                  />
+                  <div className="text-sm text-muted-foreground">seconds between audible cues</div>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Progress indicator */}
           <div className="flex justify-center gap-2 py-2">

@@ -12,6 +12,8 @@ import { poses, Pose } from '@/lib/poses';
 import { getUserProfile } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import CameraFeedback from '@/components/CameraFeedback';
+import VoiceCoach from '@/components/VoiceCoach';
+import AutoRotateModel from '@/components/AutoRotateModel';
 import { PostureFeedback } from '@/lib/posture';
 
 interface SessionConfig {
@@ -37,6 +39,7 @@ const Session = () => {
   const [cameraEnabled] = useState(profile.cameraFeedbackEnabled ?? false);
   const [show3D, setShow3D] = useState(false);
   const [postureFeedback, setPostureFeedback] = useState<PostureFeedback | null>(null);
+  const [cueKey, setCueKey] = useState(0);
 
   // Load session config
   useEffect(() => {
@@ -235,14 +238,21 @@ const Session = () => {
                 />
                 {show3D && (
                   <div className="absolute inset-0 bg-foreground/80 flex items-center justify-center">
-                    <div className="text-center text-primary-foreground">
-                      <Box className="w-12 h-12 mx-auto mb-2 animate-spin" style={{ animationDuration: '3s' }} />
-                      <p className="text-lg font-medium">3D Model Coming Soon</p>
-                    </div>
+                    <AutoRotateModel active={show3D} cueKey={cueKey} />
                   </div>
                 )}
               </div>
             </Card>
+
+            {/* Voice coach: provides audible corrections when camera detects issues */}
+            <VoiceCoach
+              feedback={postureFeedback}
+              enabled={cameraEnabled && showCamera && (profile.voiceCoachEnabled ?? false)}
+              onSpeak={() => setCueKey((k) => k + 1)}
+              cooldownMs={profile.voiceCooldown ?? 3000}
+              volume={profile.voiceVolume ?? 0.9}
+              lang={profile.voiceLang ?? 'en-US'}
+            />
 
             {/* Timer */}
             <div className="text-center mb-4">
