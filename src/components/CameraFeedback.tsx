@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { CardContent } from '@/components/ui/card';
+import { AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CameraFeedbackProps {
@@ -12,23 +11,40 @@ interface CameraFeedbackProps {
 
 const CameraFeedback = ({ isActive, poseName, onFeedback }: CameraFeedbackProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const analysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const initializeRef = useRef(false);
 
   const [cameraPermission, setCameraPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [alignmentScore, setAlignmentScore] = useState(0);
   const [feedback, setFeedback] = useState('Analyzing...');
 
   // Request camera access
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {
+      console.log('CameraFeedback: Not active, cleaning up');
+      initializeRef.current = false;
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+      return;
+    }
+
+    // Only initialize once when isActive becomes true
+    if (initializeRef.current) {
+      console.log('CameraFeedback: Already initialized, skipping');
+      return;
+    }
 
     const initCamera = async () => {
       try {
         setError(null);
+        console.log('CameraFeedback: Requesting camera access...');
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { 
             facingMode: 'user',
@@ -38,13 +54,24 @@ const CameraFeedback = ({ isActive, poseName, onFeedback }: CameraFeedbackProps)
           audio: false,
         });
 
+        console.log('CameraFeedback: Got stream:', stream);
+
         if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+          console.log('CameraFeedback: Video ref exists, setting srcObject');
           streamRef.current = stream;
+          videoRef.current.srcObject = stream;
+          
+          // Explicitly play the video
+          console.log('CameraFeedback: Calling play()');
+          await videoRef.current.play();
+          console.log('CameraFeedback: Play succeeded');
           setCameraPermission('granted');
-          setIsAnalyzing(true);
+          initializeRef.current = true;
+        } else {
+          console.error('CameraFeedback: Video ref is null!');
         }
       } catch (err) {
+        console.error('CameraFeedback: Error:', err);
         setCameraPermission('denied');
         if (err instanceof DOMException) {
           if (err.name === 'NotAllowedError') {
@@ -52,43 +79,27 @@ const CameraFeedback = ({ isActive, poseName, onFeedback }: CameraFeedbackProps)
           } else if (err.name === 'NotFoundError') {
             setError('No camera found on this device.');
           } else {
-            setError('Unable to access camera.');
+            setError('Unable to access camera: ' + err.message);
           }
+        } else {
+          setError('Unable to access camera: ' + String(err));
         }
-        setIsAnalyzing(false);
       }
     };
 
-    if (isActive && cameraPermission === 'pending') {
-      initCamera();
-    }
+    initCamera();
 
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
+      console.log('CameraFeedback: Cleanup called');
+      // Don't stop stream on unmount - only stop if isActive becomes false
     };
-  }, [isActive, cameraPermission]);
+  }, [isActive]);
 
-  // Analyze and draw on canvas periodically
+  // Update alignment score periodically
   useEffect(() => {
-    if (!isAnalyzing || !videoRef.current || !canvasRef.current) return;
+    if (!isActive || cameraPermission !== 'granted') return;
 
-    const analyzeFrame = () => {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-
-      if (!video || !canvas || video.readyState !== video.HAVE_ENOUGH_DATA) return;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      // Draw video frame on canvas (mirrored for selfie view)
-      ctx.save();
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-      ctx.restore();
-
+    const updateScore = () => {
       // Generate dummy alignment score (changes slightly each frame)
       const newScore = Math.max(0, Math.min(100, 65 + Math.random() * 30 - 15));
       setAlignmentScore(Math.round(newScore));
@@ -101,45 +112,20 @@ const CameraFeedback = ({ isActive, poseName, onFeedback }: CameraFeedbackProps)
       } else {
         setFeedback('Realign your body');
       }
-
-      // Draw overlay UI on canvas
-      drawOverlay(ctx, canvas, Math.round(newScore));
     };
 
-    analysisIntervalRef.current = setInterval(analyzeFrame, 500);
+    analysisIntervalRef.current = setInterval(updateScore, 500);
 
     return () => {
       if (analysisIntervalRef.current) {
         clearInterval(analysisIntervalRef.current);
       }
     };
-  }, [isAnalyzing]);
-
-  // Draw overlay info on canvas
-  const drawOverlay = (
-    ctx: CanvasRenderingContext2D,
-    canvas: HTMLCanvasElement,
-    score: number
-  ) => {
-    // Draw semi-transparent overlay for text
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-    ctx.fillRect(0, 0, canvas.width, 60);
-
-    // Draw alignment score text
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 28px sans-serif';
-    ctx.fillText(`Alignment: ${score}%`, 15, 40);
-
-    // Draw colored border based on alignment
-    const borderColor = score > 75 ? '#22c55e' : score > 55 ? '#eab308' : '#ef4444';
-    ctx.strokeStyle = borderColor;
-    ctx.lineWidth = 3;
-    ctx.strokeRect(0, 0, canvas.width, canvas.height);
-  };
+  }, [isActive, cameraPermission]);
 
   if (cameraPermission === 'denied' || error) {
     return (
-      <Card className="glass-card">
+      <div className="glass-card rounded-lg overflow-hidden">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
@@ -151,36 +137,35 @@ const CameraFeedback = ({ isActive, poseName, onFeedback }: CameraFeedbackProps)
             </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
     );
   }
 
   return (
     <div className="space-y-2">
-      <div className="relative overflow-hidden rounded-lg bg-black aspect-video">
-        <canvas
-          ref={canvasRef}
-          width={640}
-          height={480}
-          className="w-full h-full"
-        />
+      {/* Live camera feed - clean, no overlays */}
+      <div className="overflow-hidden rounded-lg bg-black aspect-video border border-red-500">
         <video
           ref={videoRef}
-          className="hidden"
           autoPlay
           playsInline
           muted
+          className="w-full h-full object-cover"
+          style={{ 
+            transform: 'scaleX(-1)',
+            display: 'block',
+          }}
         />
       </div>
       
-      {/* Feedback info below video */}
+      {/* Info cards below camera feed */}
       <div className="grid grid-cols-3 gap-2">
         <div className="p-3 rounded-lg bg-background/50 border border-border text-center">
-          <div className="text-sm text-muted-foreground">Alignment</div>
-          <div className="text-2xl font-bold">{alignmentScore}%</div>
+          <div className="text-xs text-muted-foreground">Alignment</div>
+          <div className="text-xl font-bold">{alignmentScore}%</div>
         </div>
         <div className="p-3 rounded-lg bg-background/50 border border-border text-center">
-          <div className="text-sm text-muted-foreground">Feedback</div>
+          <div className="text-xs text-muted-foreground">Status</div>
           <div className={cn('text-xs font-medium mt-1', 
             alignmentScore > 75 ? 'text-green-600' : 
             alignmentScore > 55 ? 'text-yellow-600' : 
@@ -190,7 +175,7 @@ const CameraFeedback = ({ isActive, poseName, onFeedback }: CameraFeedbackProps)
           </div>
         </div>
         <div className="p-3 rounded-lg bg-background/50 border border-border text-center">
-          <div className="text-sm text-muted-foreground">Pose</div>
+          <div className="text-xs text-muted-foreground">Pose</div>
           <div className="text-xs font-medium mt-1 truncate">{poseName}</div>
         </div>
       </div>
